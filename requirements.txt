@@ -1,0 +1,16 @@
+python-dotenv
+numpy
+Flask
+urllib3
+python-telegram-bot
+telegram
+openai
+pandas
+tiktoken
+matplotlib
+plotly
+scipy
+scikit-learn
+typing-extensions
+langchain
+CairoSVG
