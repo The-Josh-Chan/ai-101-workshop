@@ -1,6 +1,6 @@
 .env
-venv/
+venv\
 *.pyc
-__pycache__/
+__pycache__\
 .DS_Store
-processed/embeddings.csv
+processed\embeddings.csv
