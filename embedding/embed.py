@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+# Python lib that is a tokenizer 
 import tiktoken
 import openai
 from dotenv import load_dotenv

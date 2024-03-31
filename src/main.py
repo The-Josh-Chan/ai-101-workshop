@@ -3,7 +3,9 @@ import os
 import logging
 from telegram import Update
 from telegram.ext import filters, ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler
+import pandas as pd
 from dotenv import load_dotenv
+from questions import answer_question
 import openai
 
 # Loading environment varialbes
@@ -11,6 +13,10 @@ load_dotenv()
 # Get API keys from .env
 openai.api_key = os.environ["OPENAI_API_KEY"]
 tg_bot_token = os.environ['TG_BOT_TOKEN']
+
+# Pull in embeddings
+df = pd.read_csv('processed/embeddings.csv', index_col=0)
+df['embeddings'] = df['embeddings'].apply(eval).apply(np.array)
 
 # How we interact with chat system (Memory) array of objects, content is text of all the questions
 # messages is what we send to openai api
@@ -45,6 +51,11 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
   messages.append({"role": "assitant", "content": completion_answer})
   await context.bot.send_message(chat_id=update.effective_chat.id,
                                  text=completion_answer)
+  
+async def question(update: Update, context:ContextTypes.DEFAULT_TYPE):
+  # update is an object that as all the chat history from telegram. We can take the message.text of the chat history to get the question asked
+  answer = answer_question(df, question=update.message.text)
+  await context.bot.send_message(chat_id=update.effective_chat.id, text=answer)
 
 if __name__ == '__main__':
   application = ApplicationBuilder().token(tg_bot_token).build()
@@ -53,8 +64,12 @@ if __name__ == '__main__':
   start_handler = CommandHandler('start', start)
   # filters is a way for the telegram api to filter types of media sent to telegram
   chat_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), chat)
+  # Command handler means that it is a command in a chat (use /command) to invoke
+  question_handler = CommandHandler('question', question)
+
 
   application.add_handler(start_handler)
   application.add_handler(chat_handler)
+  application.add_handler(question_handler)
 
   application.run_polling()
